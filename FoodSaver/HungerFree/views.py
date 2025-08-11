@@ -5,10 +5,14 @@ import re
 from decouple import config
 from django.http import JsonResponse
 import json
+from .models import *
+from datetime import date, timedelta
+
+
 
 # Create your views here.
 def home(request):
-    return render(request, 'base.html')
+    return render(request, 'home.html')
 
 def chatbot(request):
     if request.method == 'POST':
@@ -47,38 +51,56 @@ def ask_gemini(prompt):
         return str(result)
 
 def update_location(request):
-    if request.method == 'POST':
-        location = request.POST.get('location')
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
 
-        if not location:
+    def build_context(food_qs, saved_location_value):
+        return {
+            'current_date': today,
+            'tomorrow_date': tomorrow,
+            'food': food_qs,
+            'saved_location': saved_location_value,
+        }
+
+    if request.method == 'POST':
+        content_type = request.headers.get('Content-Type', '')
+        location = None
+
+        # Prefer JSON payload for AJAX calls
+        if content_type.startswith('application/json'):
             try:
                 data = json.loads(request.body.decode('utf-8') or '{}')
             except Exception:
                 data = {}
-            location = data.get('location')
+            location = (data or {}).get('location')
 
-        # Debug print after resolving from form or JSON
-        print(location)
+        # Fallback to form field
+        if not location:
+            location = request.POST.get('location')
 
         if location:
             request.session['saved_location'] = location
 
-        # Return JSON for AJAX
-        is_json = request.headers.get('Content-Type', '').startswith('application/json')
+        saved_location = request.session.get('saved_location')
+        food_qs = (Food.objects.filter(location__icontains=saved_location)
+                   if saved_location else Food.objects.all())
+
+        # If AJAX/JSON request, just acknowledge and let the client reload
+        is_json = content_type.startswith('application/json')
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         if is_json or is_ajax:
-            return JsonResponse({'status': 'ok', 'saved_location': location})
+            return JsonResponse({'status': 'ok', 'saved_location': saved_location})
 
-        return render(request, 'donations.html', {
-            'manual_form_visible': True,
-            'saved_location': location
-        })
+        context = build_context(food_qs, saved_location)
+        context['manual_form_visible'] = True
+        return render(request, 'donations.html', context)
 
-    return render(request, 'donations.html', {
-        'saved_location': request.session.get('saved_location')
-    })
-
-
+    # GET: render with current session filter (if any)
+    saved_location = request.session.get('saved_location')
+    food_qs = (Food.objects.filter(location__icontains=saved_location)
+               if saved_location else Food.objects.all())
+    context = build_context(food_qs, saved_location)
+    return render(request, 'donations.html', context)
 
 
 
@@ -130,8 +152,16 @@ def about(request):
     return render(request, 'about.html')
 
 def donations(request):
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    saved_location = request.session.get('saved_location')
+    food_qs = (Food.objects.filter(location__icontains=saved_location)
+               if saved_location else Food.objects.all())
     return render(request, 'donations.html', {
-        'saved_location': request.session.get('saved_location')
+        'food': food_qs,
+        'current_date': today,
+        'tomorrow_date': tomorrow,
+        'saved_location': saved_location,
     })
 
 def future_features(request):

@@ -48,37 +48,51 @@
     <p class="text-muted">All available donations in our network</p>
 
     <div class="row" id="donationsContainer">
-        <!-- Demo Donation Card -->
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <h5 class="text-primary"><i class="bi bi-box-seam me-1"></i>Rice Bags</h5>
-                        <span class="badge bg-success">Available</span>
+        {% if food %}
+            {% for item in food %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="text-primary"><i class="bi bi-box-seam me-1"></i>{{ item.name }}</h5>
+                                {% if item.status == 'Available' %}
+                                    <span class="badge bg-success">{{ item.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ item.status }}</span>
+                                {% endif %}
+                            </div>
+                            <p><i class="bi bi-speedometer2 text-warning me-2"></i><strong>Quantity:</strong> {{ item.quantity }}</p>
+                            <p><i class="bi bi-calendar-event text-info me-2"></i><strong>Expires:</strong> {{ item.expiryDate|date:"Y-m-d" }}</p>
+                            <p><i class="bi bi-geo-alt text-danger me-2"></i><strong>Location:</strong> {{ item.location }}</p>
+                        </div>
+                         <!-- Urgency Indicator -->
+                         <div class="mb-3 p-2">
+                            {% if item.expiryDate < current_date %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Expired
+                                </span>
+                            {% elif item.expiryDate == current_date %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Urgent - Expires Today!
+                                </span>
+                            {% elif item.expiryDate == tomorrow_date %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock me-1"></i>Expires Tomorrow
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Fresh
+                                </span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <p><i class="bi bi-speedometer2 text-warning me-2"></i><strong>Quantity:</strong> 10 Kg</p>
-                    <p><i class="bi bi-calendar-event text-info me-2"></i><strong>Expires:</strong> 2025-08-10</p>
-                    <p><i class="bi bi-geo-alt text-danger me-2"></i><strong>Location:</strong> Chennai</p>
-                    <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Urgent - Expires Soon!</span>
-                </div>
+                </div>          
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info mb-0">No donations available right now.</div>
             </div>
-        </div>
-
-        <!-- Another Demo Donation Card -->
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <h5 class="text-primary"><i class="bi bi-box-seam me-1"></i>Bread Loaves</h5>
-                        <span class="badge bg-success">Available</span>
-                    </div>
-                    <p><i class="bi bi-speedometer2 text-warning me-2"></i><strong>Quantity:</strong> 5</p>
-                    <p><i class="bi bi-calendar-event text-info me-2"></i><strong>Expires:</strong> 2025-08-11</p>
-                    <p><i class="bi bi-geo-alt text-danger me-2"></i><strong>Location:</strong> Bangalore</p>
-                    <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Expires Tomorrow</span>
-                </div>
-            </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -136,7 +150,7 @@
                             display.textContent = `Your Location is: ${city}`;
                             display.classList.remove("d-none");
 
-                            // Persist to backend via POST (AJAX)
+                            // Persist to backend via POST (AJAX), then refresh to show filtered foods
                             fetch("{% url 'update_location' %}", {
                                 method: "POST",
                                 headers: {
@@ -145,7 +159,13 @@
                                     "X-Requested-With": "XMLHttpRequest"
                                 },
                                 body: JSON.stringify({ location: city })
-                            });
+                            })
+                              .then(() => {
+                                  window.location.href = "{% url 'donations' %}";
+                              })
+                              .catch(() => {
+                                  window.location.reload();
+                              });
                         })
                         .catch(() => {
                             display.textContent = `Your Location is: (${lat}, ${lon})`;
