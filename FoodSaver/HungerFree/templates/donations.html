@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="py-5 text-center">
+    <div class="container">
+        <h2 class="fw-bold text-success"><i class="bi bi-geo-alt-fill me-2"></i>Nearby Food Donations</h2>
+        <p class="text-muted">Discover food donations in your area and help reduce waste while fighting hunger</p>
+    </div>
+</section>
+
+<!-- Location Detection -->
+<div class="container mb-5">
+    <div class="card location-card shadow-sm">
+        <div class="card-header bg-success text-white fw-bold">
+            <i class="bi bi-gear me-2"></i>Location Detection
+        </div>
+        <div class="card-body">
+            <button class="btn btn-success btn-location me-2" id="detectLocationBtn">
+                <i class="bi bi-geo-alt me-1"></i>Detect My Location
+            </button>
+            <button class="btn btn-outline-success btn-location" id="manualLocationBtn">
+                <i class="bi bi-pencil me-1"></i>Enter Location Manually
+            </button>
+            
+            <!-- Manual Location Input -->
+            <form method="POST" id="manualLocationForm"
+                enctype="multipart/form-data"
+                action="{% url 'update_location' %}"
+                class="{% if manual_form_visible %}{% else %}d-none{% endif %}">
+                {% csrf_token %}
+                <input type="text" name="location" class="form-control mt-3"
+                    placeholder="Enter your location"
+                    id="manualLocationInput"
+                    value="{{ saved_location|default:'' }}">
+                <button type="submit" class="btn btn-primary mt-2">Update Location</button>
+            </form>
+            <!-- Display Location -->
+            <p class="mt-3 text-success fw-bold{% if not saved_location %} d-none{% endif %}" id="displayLocation">
+                {% if saved_location %}Your Location is: {{ saved_location }}{% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Available Donations -->
+<div class="container mb-5">
+    <h4 class="fw-bold"><i class="bi bi-list-ul me-2"></i>Available Food Donations</h4>
+    <p class="text-muted">All available donations in our network</p>
+
+    <div class="row" id="donationsContainer">
+        <!-- Demo Donation Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="text-primary"><i class="bi bi-box-seam me-1"></i>Rice Bags</h5>
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <p><i class="bi bi-speedometer2 text-warning me-2"></i><strong>Quantity:</strong> 10 Kg</p>
+                    <p><i class="bi bi-calendar-event text-info me-2"></i><strong>Expires:</strong> 2025-08-10</p>
+                    <p><i class="bi bi-geo-alt text-danger me-2"></i><strong>Location:</strong> Chennai</p>
+                    <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Urgent - Expires Soon!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Another Demo Donation Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="text-primary"><i class="bi bi-box-seam me-1"></i>Bread Loaves</h5>
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <p><i class="bi bi-speedometer2 text-warning me-2"></i><strong>Quantity:</strong> 5</p>
+                    <p><i class="bi bi-calendar-event text-info me-2"></i><strong>Expires:</strong> 2025-08-11</p>
+                    <p><i class="bi bi-geo-alt text-danger me-2"></i><strong>Location:</strong> Bangalore</p>
+                    <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Expires Tomorrow</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .location-card {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .btn-location {
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    // CSRF helper for AJAX (reads csrftoken from cookie)
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Toggle manual location form
+    document.getElementById("manualLocationBtn").addEventListener("click", function() {
+        const form = document.getElementById("manualLocationForm");
+        form.classList.toggle("d-none");
+    });
+
+    // Live update for manual location
+    document.getElementById("manualLocationInput").addEventListener("input", function() {
+        const locationText = this.value.trim();
+        const display = document.getElementById("displayLocation");
+        if (locationText) {
+            display.textContent = `Your Location is: ${locationText}`;
+            display.classList.remove("d-none");
+        } else {
+            display.classList.add("d-none");
+        }
+    });
+
+    // Detect My Location (Browser Geolocation API)
+    document.getElementById("detectLocationBtn").addEventListener("click", function() {
+        const display = document.getElementById("displayLocation");
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    let lat = position.coords.latitude;
+                    let lon = position.coords.longitude;
+
+                    // Use reverse geocoding to get city name
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            let city = data.address.city || data.address.town || data.address.village || "Unknown Location";
+                            display.textContent = `Your Location is: ${city}`;
+                            display.classList.remove("d-none");
+
+                            // Persist to backend via POST (AJAX)
+                            fetch("{% url 'update_location' %}", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": getCookie("csrftoken"),
+                                    "X-Requested-With": "XMLHttpRequest"
+                                },
+                                body: JSON.stringify({ location: city })
+                            });
+                        })
+                        .catch(() => {
+                            display.textContent = `Your Location is: (${lat}, ${lon})`;
+                            display.classList.remove("d-none");
+                        });
+                },
+                function() {
+                    alert("Unable to retrieve your location.");
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    });
+</script>
+{% endblock %}

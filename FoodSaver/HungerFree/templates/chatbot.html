@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Page Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold text-primary">
+                        <i class="bi bi-robot me-3"></i>AI Assistant
+                    </h1>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="card shadow-lg border-0">
+                    
+                    <div class="card-body" style="min-height: 400px;">
+                        <!-- Quick Start Form -->
+                        <div id="quick-form" class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-lightning me-1"></i>Quick Start
+                            </h6>
+                            <form id="chatForm" method="POST" action="{% url 'chatbot' %}" enctype="multipart/form-data" class="p-4 rounded shadow-sm" style="background: linear-gradient(90deg, #e3f2fd 0%, #f8fafc 100%); border: 1px solid #e0e7ef;">
+                                {% csrf_token %}
+                                <div class="row g-3 justify-content-center">
+                                    <div class="col-md-4">
+                                        <label for="mealType" class="form-label fw-semibold text-primary">Meal Type</label>
+                                        <select class="form-select border-primary" id="mealType" name="meal_type" required>
+                                            <option value="">Choose meal</option>
+                                            <option value="Breakfast">Breakfast</option>
+                                            <option value="Lunch">Lunch</option>
+                                            <option value="Dinner">Dinner</option>
+                                            <option value="Snack">Snack</option>
+                                            <option value="Dessert">Dessert</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="dishType" class="form-label fw-semibold text-success">Dish Type</label>
+                                        <input type="text" name="dish_name" class="form-control border-success" id="dishType" placeholder="e.g. Curry, Salad" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="numPeople" class="form-label fw-semibold text-warning">Number of People</label>
+                                        <input type="number" name="num_people" class="form-control border-warning" id="numPeople" min="1" max="20" placeholder="Enter number" required>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col text-center">
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bi bi-send me-1"></i>Submit
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <hr>
+
+                        <!-- Custom Query Form -->
+                        <div class="mb-4">
+                            <h6 class="text-success mb-3">
+                                <i class="bi bi-question-circle me-1"></i>Ask Anything
+                            </h6>
+                            <form id="customQueryForm" method="POST" action="{% url 'chatbot' %}" encode="multipart/form-data" class="p-4 rounded shadow-sm" style="background: linear-gradient(90deg, #f8fafc 0%, #e3f2fd 100%); border: 1px solid #e0e7ef;">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="customQuery" 
+                                           name="custom_query"
+                                           placeholder="Ask about ingredients, storage, alternatives, recipes..."
+                                           required>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-send"></i> Submit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Loading Spinner -->
+                        <div id="loadingSpinner" class="text-center d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Getting AI response...</p>
+                        </div>
+
+                        <!-- Response Area -->
+                        {% if response %}
+                        <div id="responseArea">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-lightbulb me-1"></i>AI Response
+                            </h6>
+                            <div id="aiResponse" class="alert alert-light border p-4" 
+                                 style="background-color: #f8f9fa; max-height: 400px; overflow-y: auto; white-space: pre-wrap;">
+                                {{ response|escape }}
+                            </div>
+                            <a href="{% url 'chatbot' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Ask Another Question
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Tips Section -->
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h4 class="text-center mb-4">💡 Example Questions You Can Ask</h4>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calculator text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6>Quantities</h6>
+                                <p class="text-muted small">
+                                    "How much rice for 4 people?" or "Pasta serving sizes?"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-body text-center">
+                                <i class="bi bi-arrow-repeat text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6>Alternatives</h6>
+                                <p class="text-muted small">
+                                    "Substitute for eggs in baking?" or "Dairy-free milk options?"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-body text-center">
+                                <i class="bi bi-archive text-warning mb-2" style="font-size: 2rem;"></i>
+                                <h6>Storage</h6>
+                                <p class="text-muted small">
+                                    "How to store leftover vegetables?" or "Freezing cooked rice?"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

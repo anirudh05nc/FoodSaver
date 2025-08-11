@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="bi bi-heart-fill text-warning me-2"></i>
+                    Save Food, Save the Planet
+                </h1>
+                <p class="lead mb-4">
+                    FoodSaver is your AI-powered companion in the fight against food waste. 
+                    Get smart ingredient guidance and discover nearby food donations to make every meal count.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'foodsaver_app:chatbot' %}" class="btn btn-light btn-lg px-4">
+                        <i class="bi bi-robot me-2"></i>Try AI Assistant
+                    </a>
+                    <a href="{% url 'foodsaver_app:donations' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-geo-alt me-2"></i>Find Donations
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600" 
+                     alt="Fresh vegetables and healthy food" 
+                     class="img-fluid rounded shadow" 
+                     style="max-height: 400px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Statement -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="mb-4">Our Mission</h2>
+                <p class="lead text-muted">
+                    Every year, billions of tons of food go to waste while millions go hungry. 
+                    FoodSaver bridges this gap using artificial intelligence and community networks 
+                    to reduce food waste and ensure no one goes without a meal.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Features -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2>How FoodSaver Helps</h2>
+                <p class="text-muted">Discover the tools that make sustainable eating simple</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- AI Chatbot Feature -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-robot text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title">AI Ingredient Assistant</h4>
+                        <p class="card-text text-muted">
+                            Get precise ingredient quantities, storage tips, and alternative suggestions 
+                            powered by Google's Gemini AI. Never waste food due to poor planning again.
+                        </p>
+                        <a href="{% url 'foodsaver_app:chatbot' %}" class="btn btn-primary">
+                            <i class="bi bi-chat-dots me-1"></i>Start Chatting
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Location-based Donations -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-geo-alt text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title">Nearby Food Donations</h4>
+                        <p class="card-text text-muted">
+                            Automatically discover food donations in your area using location detection. 
+                            Connect with local donors and never let good food go to waste.
+                        </p>
+                        <a href="{% url 'foodsaver_app:donations' %}" class="btn btn-success">
+                            <i class="bi bi-search me-1"></i>Find Donations
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Community Impact -->
+            <div class="col-md-12 col-lg-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-people text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title">Community Impact</h4>
+                        <p class="card-text text-muted">
+                            Join a growing community of food savers making a real difference. 
+                            Track your impact and help build a more sustainable food system.
+                        </p>
+                        <a href="{% url 'foodsaver_app:about' %}" class="btn btn-warning text-white">
+                            <i class="bi bi-info-circle me-1"></i>Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up text-success" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-success">1.3B</h3>
+                        <p class="text-muted">Tons of food wasted globally per year</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="bi bi-people text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-primary">828M</h3>
+                        <p class="text-muted">People affected by hunger worldwide</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="bi bi-recycle text-warning" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-warning">30%</h3>
+                        <p class="text-muted">Of global food production is wasted</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="bi bi-globe text-info" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 text-info">8%</h3>
+                        <p class="text-muted">Of global greenhouse gases from food waste</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4">Ready to Make a Difference?</h2>
+                <p class="lead mb-4">
+                    Start your journey towards sustainable food practices today. 
+                    Every small action contributes to a bigger change.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{% url 'foodsaver_app:chatbot' %}" class="btn btn-light btn-lg px-4">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Get Started Now
+                    </a>
+                    <a href="{% url 'foodsaver_app:about' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-book me-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
