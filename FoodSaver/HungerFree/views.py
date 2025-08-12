@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import google.generativeai as genai 
 import requests
 import re
@@ -6,7 +6,7 @@ from decouple import config
 from django.http import JsonResponse
 import json
 from .models import *
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 
 
@@ -166,3 +166,33 @@ def donations(request):
 
 def future_features(request):
     return render(request, 'future.html')
+
+def create_donation(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        quantity = request.POST.get('quantity')
+        expiry_date = request.POST.get('expiryDate')
+        location = request.POST.get('location')
+
+        if name and quantity and expiry_date and location:
+            try:
+                parsed_expiry = datetime.strptime(expiry_date, '%Y-%m-%d').date()
+                Food.objects.create(
+                    name=name,
+                    quantity=int(quantity),
+                    expiryDate=parsed_expiry,
+                    location=location,
+                    status='Available',
+                )
+                # Persist user's location filter for donations page
+                request.session['saved_location'] = location
+            except Exception:
+                pass
+        return redirect('donations')
+    # Fallback: go back home if not POST
+    return redirect('home')
+
+def show_all_donations(request):
+    # Clear any saved location filter and redirect to list all donations
+    request.session.pop('saved_location', None)
+    return redirect('donations')
